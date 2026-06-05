@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescataPack - Bienvenido</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-perfil {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+        }
+        .card-perfil:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .icono-perfil {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        .btn-ingresar {
+            border-radius: 20px;
+            padding: 10px 30px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3" style="color: #2c3e50;">Bienvenido a <span class="text-success">RescataPack</span></h1>
+        <p class="lead mb-5 text-muted">Salva comida deliciosa, ahorra dinero y cuida el planeta.</p>
+
+        <div class="row justify-content-center g-4">
+            <div class="col-md-5 col-lg-4">
+                <div class="card card-perfil h-100 p-4 shadow-sm" onclick="ingresarComoCliente()">
+                    <div class="card-body">
+                        <div class="icono-perfil text-primary">🛒</div>
+                        <h3 class="card-title fw-bold">Soy Cliente</h3>
+                        <p class="card-text text-muted">Quiero buscar restaurantes, rescatar packs sorpresa y aprovechar los descuentos.</p>
+                        <button class="btn btn-outline-primary btn-ingresar mt-3 w-100">Entrar al Catálogo</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 col-lg-4">
+                <div class="card card-perfil h-100 p-4 shadow-sm" onclick="ingresarComoRestaurante()">
+                    <div class="card-body">
+                        <div class="icono-perfil text-warning">🏪</div>
+                        <h3 class="card-title fw-bold">Soy Restaurante</h3>
+                        <p class="card-text text-muted">Quiero publicar mis excedentes del día y gestionar mi inventario de packs.</p>
+                        <button class="btn btn-outline-warning btn-ingresar mt-3 w-100">Entrar como Comercio</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones de redirección muy simples
+        function ingresarComoCliente() {
+            window.location.href = 'login-cliente.html'; // ¡Actualizado!
+        }
+
+        function ingresarComoRestaurante() {
+            localStorage.setItem('tipoUsuario', 'restaurante');
+            // Lo enviamos a la vista donde se publican alimentos
+            window.location.href = 'restaurante.html'; 
+        }
+    </script>
+</body>
+</html>

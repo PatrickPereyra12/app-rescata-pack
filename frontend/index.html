@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>RescataPack - ODS 12</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0fdf4; margin: 0; padding: 20px; color: #333; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: #15803d; margin-bottom: 5px; }
+        .subtitle { color: #166534; font-weight: 600; }
+        
+        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        
+        /* Estilos de las tarjetas (Packs) */
+        .pack-card { background: white; padding: 20px; border-radius: 12px; width: 280px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #dcfce7; transition: transform 0.2s; }
+        .pack-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .pack-card h3 { color: #166534; margin-top: 0; border-bottom: 2px solid #bbf7d0; padding-bottom: 10px; }
+        .price { font-size: 1.2em; color: #15803d; font-weight: bold; }
+        .btn { background: #16a34a; color: white; border: none; padding: 12px; width: 100%; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 1em; transition: background 0.3s; }
+        .btn:hover { background: #15803d; }
+        
+        /* Sección de Packs Rescatados */
+        .rescates-section { margin-top: 40px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .rescates-list { list-style: none; padding: 0; }
+        .rescates-list li { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .impact-badge { background: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
+
+        /* Estilos de la Ventana Modal (Popup) */
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 30px; border: 1px solid #888; width: 80%; max-width: 400px; border-radius: 12px; text-align: center; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .modal-icon { font-size: 40px; color: #16a34a; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>RescataPack 🍲</h1>
+        <p class="subtitle">El "Too Good To Go" para comercios locales peruanos</p>
+    </header>
+
+
+    <div class="container" id="lista-packs">
+        <p>Buscando alimentos disponibles en tu zona...</p>
+    </div>
+
+    <div class="rescates-section">
+        <h2>Tus Rescates Exitosos 🌍</h2>
+        <p>Historial de packs salvados:</p>
+        <ul id="lista-rescatados" class="rescates-list">
+            </ul>
+        <button onclick="limpiarRescates()" style="margin-top: 10px; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">Limpiar Historial</button>
+    </div>
+
+    <div id="miModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal()">&times;</span>
+            <div class="modal-icon">✅</div>
+            <h2 id="modal-titulo">¡Pack Rescatado!</h2>
+            <p id="modal-mensaje">Has asegurado este pack.</p>
+            <p class="impact-badge">🌿 Has evitado desperdicio de alimentos (ODS 12)</p>
+        </div>
+    </div>
+
+    <button onclick="cerrarSesion()" class="btn btn-danger position-fixed bottom-0 end-0 m-4 shadow fw-bold" style="border-radius: 20px; z-index: 1000;">
+        🚪 Cerrar Sesión
+    </button>
+
+    <script>
+
+        let rescates = JSON.parse(localStorage.getItem('misRescates')) || [];
+
+        // Función para cargar los packs desde tu servidor Node.js/AWS
+        function cargarPacks() {
+            fetch('http://localhost:3000/api/packs')
+                .then(response => response.json())
+                .then(data => {
+                    const contenedor = document.getElementById('lista-packs');
+                    contenedor.innerHTML = ''; // Limpiar mensaje de carga
+                    
+                    data.forEach(pack => {
+                        contenedor.innerHTML += `
+                            <div class="pack-card">
+                                <h3>${pack.nombre_restaurante}</h3>
+                                <p>${pack.descripcion}</p>
+                                <p class="price">S/ ${pack.precio_oferta}</p>
+                                <button class="btn" onclick="rescatarPack(${pack.id_pack}, '${pack.nombre_restaurante}', '${pack.precio_oferta}')">
+                                    ¡Rescatar Ahora!
+                                </button>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('lista-packs').innerHTML = '<p style="color:red;">Error al cargar los alimentos. Verifica que tu servidor Node.js esté corriendo.</p>';
+                });
+        }
+
+        // 3. Función que se ejecuta al darle click a "Rescatar Ahora"
+        function rescatarPack(id_pack, restaurante, precio) {
+            fetch('http://localhost:3000/api/reservas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    id_pack: id_pack, 
+                    cantidad: 1 // Reservamos 1 pack por defecto
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Guardar visualmente en el historial local
+                const fecha = new Date().toLocaleDateString();
+                rescates.push({ restaurante: restaurante, precio: precio, fecha: fecha });
+                localStorage.setItem('misRescates', JSON.stringify(rescates));
+                mostrarRescates();
+
+                // Mostrar el Modal de éxito
+                document.getElementById('modal-mensaje').innerText = data.mensaje;
+                document.getElementById('miModal').style.display = "block";
+
+                // Recargar los packs para ver el stock actualizado (bajará en 1)
+                cargarPacks();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al procesar tu reserva.');
+            });
+        }
+
+        // 4. Función para mostrar la lista de guardados
+        function mostrarRescates() {
+            const lista = document.getElementById('lista-rescatados');
+            lista.innerHTML = '';
+            
+            if(rescates.length === 0) {
+                lista.innerHTML = '<li>Aún no has rescatado ningún pack. ¡Anímate!</li>';
+                return;
+            }
+
+            rescates.forEach(r => {
+                lista.innerHTML += `<li>
+                    <span><strong>${r.restaurante}</strong> (S/ ${r.precio})</span>
+                    <span class="impact-badge">${r.fecha}</span>
+                </li>`;
+            });
+        }
+
+        // 5. Funciones para el Modal 
+        function cerrarModal() {
+            document.getElementById('miModal').style.display = "none";
+        }
+
+        function limpiarRescates() {
+            if(confirm('¿Seguro que quieres borrar tu historial de rescates?')) {
+                rescates = [];
+                localStorage.removeItem('misRescates');
+                mostrarRescates();
+            }
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('miModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        // Función para cerrar sesión y volver a la página de inicio
+        function cerrarSesion() {
+            // 1. Borramos la información del usuario de la memoria del navegador
+            localStorage.removeItem('usuarioLogueado');
+            localStorage.removeItem('tipoUsuario');
+            
+            // 2. Redirigimos a la página de selección de perfiles
+            window.location.href = 'inicio.html';
+        }
+
+        // 6. LOS ACTIVADORES DE LA PÁGINA
+        cargarPacks();
+        mostrarRescates();
+    </script>
+</body>
+</html>

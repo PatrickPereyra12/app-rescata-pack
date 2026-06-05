@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Cliente - RescataPack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .auth-card { max-width: 400px; width: 100%; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); padding: 30px; background: white; }
+        .oculto { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card" id="caja-login">
+        <h3 class="text-center fw-bold mb-4">Iniciar Sesión</h3>
+        <form id="form-login">
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="log-correo" required value="dylan@correo.com">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="log-pass" required value="123456">
+            </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold">Ingresar</button>
+        </form>
+        <p class="text-center mt-3 text-muted">¿No tienes cuenta? <a href="#" onclick="mostrarRegistro()">Regístrate aquí</a></p>
+    </div>
+
+    <div class="auth-card oculto" id="caja-registro">
+        <h3 class="text-center fw-bold mb-4">Crear Cuenta</h3>
+        <form id="form-registro">
+            <div class="mb-3">
+                <label class="form-label">Nombre Completo</label>
+                <input type="text" class="form-control" id="reg-nombre" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="reg-correo" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="reg-pass" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100 fw-bold">Registrarme</button>
+        </form>
+        <p class="text-center mt-3 text-muted">¿Ya tienes cuenta? <a href="#" onclick="mostrarLogin()">Inicia sesión</a></p>
+    </div>
+
+    <script>
+        // Cambiar entre vistas
+        function mostrarRegistro() {
+            document.getElementById('caja-login').classList.add('oculto');
+            document.getElementById('caja-registro').classList.remove('oculto');
+        }
+        function mostrarLogin() {
+            document.getElementById('caja-registro').classList.add('oculto');
+            document.getElementById('caja-login').classList.remove('oculto');
+        }
+
+        // Lógica de Login
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const correo = document.getElementById('log-correo').value;
+            const contrasena = document.getElementById('log-pass').value;
+
+            const res = await fetch('http://localhost:3000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo, contrasena })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                alert(`¡Bienvenido ${data.usuario.nombre}!`);
+                localStorage.setItem('usuarioLogueado', JSON.stringify(data.usuario));
+                window.location.href = 'index.html'; // Lo enviamos al catálogo
+            } else {
+                alert(data.mensaje);
+            }
+        });
+
+        // Lógica de Registro
+        document.getElementById('form-registro').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('reg-nombre').value;
+            const correo = document.getElementById('reg-correo').value;
+            const contrasena = document.getElementById('reg-pass').value;
+
+            const res = await fetch('http://localhost:3000/api/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, correo, contrasena })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                alert(data.mensaje);
+                mostrarLogin(); // Lo devolvemos al login para que entre
+            } else {
+                alert(data.mensaje);
+            }
+        });
+    </script>
+</body>
+</html>

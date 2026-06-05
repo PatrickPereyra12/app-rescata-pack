@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Restaurante - RescataPack</title>
+    <style>
+        :root {
+            --verde-principal: #27ae60;
+            --verde-oscuro: #1e8449;
+            --gris-fondo: #f4f7f6;
+            --texto-oscuro: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gris-fondo);
+            color: var(--texto-oscuro);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            color: var(--verde-principal);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--verde-principal);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--verde-principal);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--verde-oscuro);
+        }
+
+        .btn-volver {
+            background-color: #95a5a6;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        .btn-volver:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <button type="button" class="btn btn-secondary w-100 fw-bold mb-3" onclick="window.location.href='index.html'">← Volver a Vista Cliente</button>
+    <button type="button" class="btn btn-secondary w-100 fw-bold mb-3" onclick="window.location.href='eliminar-pack.html'">🗑️ Gestionar y Eliminar Packs</button>
+
+    <hr class="text-muted">
+
+    <div class="container">
+        <h2>🚀 Publicar Nuevo Pack</h2>
+        <form id="formPack">
+            <div class="form-group">
+                <label>Nombre del Restaurante</label>
+                <input type="text" id="restaurante" placeholder="Ej: Bembos" required>
+            </div>
+            <div class="form-group">
+                <label>Nombre del Pack</label>
+                <input type="text" id="pack" placeholder="Ej: Pack Hamburguesas" required>
+            </div>
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Precio Original</label>
+                    <input type="number" id="precioOrig" step="0.01" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Precio Rescate</label>
+                    <input type="number" id="precioDesc" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Stock Disponible</label>
+                <input type="number" id="stock" required>
+            </div>
+            <button type="submit" id="btnPublicar">Publicar en la Nube (AWS)</button>
+        </form>
+
+        <button class="btn-volver" onclick="window.location.href='index.html'">
+            ← Volver a Vista Cliente
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('formPack').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnPublicar');
+            btn.innerText = "Enviando a AWS...";
+            btn.disabled = true;
+
+            const datos = {
+                nombre_restaurante: document.getElementById('restaurante').value,
+                nombre_pack: document.getElementById('pack').value,
+                precio_original: document.getElementById('precioOrig').value,
+                precio_descuento: document.getElementById('precioDesc').value,
+                stock: document.getElementById('stock').value
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/api/packs', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                });
+                const result = await res.json();
+                alert("¡Éxito! " + result.mensaje);
+                window.location.href = 'index.html'; 
+            } catch (err) {
+                alert("Error al conectar con el servidor");
+            } finally {
+                btn.innerText = "Publicar en la Nube (AWS)";
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

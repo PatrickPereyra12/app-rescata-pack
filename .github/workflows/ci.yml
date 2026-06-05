@@ -1,0 +1,27 @@
+name: DevSecOps CI Pipeline - RescataPack
+
+on:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-test-secure:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Descargar el código fuente
+      uses: actions/checkout@v3
+
+    - name: 2. Configurar entorno Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
+    - name: 3. Etapa de Construcción (Build)
+      run: npm install
+
+    - name: 4. Etapa de Pruebas Unitarias (Test)
+      run: npm test
+
+    - name: 5. Etapa de Seguridad Estática - SAST (Sec)
+      run: npm audit --audit-level=high
