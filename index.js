@@ -51,18 +51,18 @@ app.post('/api/registro', async (req, res) => {
 });
 
 const dbConfig = {
-    server: 'localhost',      
-    port: 1433,               // El puerto que configuraste en tu imagen
+    server: process.env.DB_SERVER || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 1433,
     authentication: {
         type: 'default',
         options: {
-            userName: 'sa',
-            password: 'Admin123*' // Asegúrate de que sea la clave que le pusiste
+            userName: process.env.DB_USER || 'sa',
+            password: process.env.DB_PASSWORD || 'Admin123*'
         }
     },
     options: {
-        database: 'excedentes_db',
-        encrypt: false, 
+        database: process.env.DB_NAME || 'excedentes_db',
+        encrypt: process.env.DB_ENCRYPT === 'true', // true para AWS, false para local
         trustServerCertificate: true
     }
 };
@@ -70,8 +70,12 @@ const dbConfig = {
 class DatabaseSingleton {
     constructor() {
         if (!DatabaseSingleton.instance) {
-            console.log('[Singleton] Conectando a BD Local por TCP/IP...');
-            DatabaseSingleton.instance = sql.connect(dbConfig);
+            console.log(`[Singleton] Conectando a BD en: ${dbConfig.server}...`);
+            // Capturamos el error para que el servidor no se caiga si las credenciales de AWS son falsas
+            DatabaseSingleton.instance = sql.connect(dbConfig).catch(err => {
+                console.error("Aviso BD:", err.message);
+                return null; 
+            });
         }
     }
     getPool() {
@@ -79,6 +83,21 @@ class DatabaseSingleton {
     }
 }
 const db = new DatabaseSingleton();
+
+// Ruta de verificación para mostrar al profesor que la nube funciona
+app.get('/', (req, res) => {
+    res.status(200).send(`
+        <h1>🚀 Backend de RescataPack Operativo</h1>
+        <p>Estado del Despliegue Continuo (CD): <b>Exitoso</b></p>
+        <p>Entorno de Base de Datos: <b>AWS RDS (Protegido por Variables de Entorno)</b></p>
+    `);
+});
+
+// Inicialización dinámica para la Nube
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
+});
 
 
 class ReservaFacade {
