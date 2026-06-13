@@ -84,21 +84,6 @@ class DatabaseSingleton {
 }
 const db = new DatabaseSingleton();
 
-// Ruta de verificación para mostrar al profesor que la nube funciona
-app.get('/', (req, res) => {
-    res.status(200).send(`
-        <h1>🚀 Backend de RescataPack Operativo</h1>
-        <p>Estado del Despliegue Continuo (CD): <b>Exitoso</b></p>
-        <p>Entorno de Base de Datos: <b>AWS RDS (Protegido por Variables de Entorno)</b></p>
-    `);
-});
-
-// Inicialización dinámica para la Nube
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
-});
-
 
 class ReservaFacade {
     static async procesarReserva(id_pack, cantidad, id_usuario) {
@@ -229,8 +214,17 @@ app.get('/api/restaurantes/categoria/:id_categoria', async (req, res) => {
     }
 });
 
-// Inicialización
-const PORT = 3000;
+// Ruta de verificación para mostrar al profesor que la nube funciona
+app.get('/', (req, res) => {
+    res.status(200).send(`
+        <h1>🚀 Backend de RescataPack Operativo</h1>
+        <p>Estado del Despliegue Continuo (CD): <b>Exitoso</b></p>
+        <p>Entorno de Base de Datos: <b>AWS RDS (Protegido por Variables de Entorno)</b></p>
+    `);
+});
+
+// Inicialización dinámica para la Nube
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor monolítico corriendo en el puerto ${PORT}`);
+    console.log(`Servidor corriendo exitosamente en el puerto ${PORT}`);
 });
